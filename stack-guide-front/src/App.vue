@@ -52,43 +52,37 @@
 
         >
       <v-btn slot="activator" outline color="indigo">SignUp</v-btn>
-      <v-form ref="form" v-model="valid" lazy-validation>
-        
+   <form>
     <v-text-field
       v-model="name"
-      :rules="nameRules"
+      :error-messages="nameErrors"
       :counter="10"
-      label="Name"
+      label="username"
       required
+      @input="$v.username.$touch()"
+      @blur="$v.username.$touch()"
     ></v-text-field>
     <v-text-field
       v-model="email"
-      :rules="emailRules"
+      :error-messages="emailErrors"
       label="E-mail"
       required
+      @input="$v.email.$touch()"
+      @blur="$v.email.$touch()"
     ></v-text-field>
-    <v-select
-      v-model="select"
-      :items="items"
-      :rules="[v => !!v || 'Item is required']"
-      label="Item"
-      required
-    ></v-select>
+
     <v-checkbox
       v-model="checkbox"
-      :rules="[v => !!v || 'You must agree to continue!']"
+      :error-messages="checkboxErrors"
       label="Do you agree?"
       required
+      @change="$v.checkbox.$touch()"
+      @blur="$v.checkbox.$touch()"
     ></v-checkbox>
 
-    <v-btn
-      :disabled="!valid"
-      @click="submit"
-    >
-      submit
-    </v-btn>
+    <v-btn @click="submit">submit</v-btn>
     <v-btn @click="clear">clear</v-btn>
-  </v-form>
+  </form>
         </v-menu>
 
       </div>
@@ -123,9 +117,15 @@
 
 export default {
   name: 'App',
+  validations: {
+      username: { required, maxLength: maxLength(10) },
+      email: { required, email }
+    },
+
   data () {
     return {
-      fav: true,
+      username:'',
+      email:'',
       menu:false,
       message:false,
       hints:true,
@@ -141,7 +141,34 @@ export default {
       rightDrawer: false,
       title: 'Suppliment Stack Creater'
     }
-  }
+  },
+  computed: {
+      nameErrors () {
+        const errors = []
+        if (!this.$v.username.$dirty) return errors
+        !this.$v.username.maxLength && errors.push('Name must be at most 10 characters long')
+        !this.$v.username.required && errors.push('Name is required.')
+        return errors
+      },
+      emailErrors () {
+        const errors = []
+        if (!this.$v.email.$dirty) return errors
+        !this.$v.email.email && errors.push('Must be valid e-mail')
+        !this.$v.email.required && errors.push('E-mail is required')
+        return errors
+      }
+    },
+    methods: {
+      submit () {
+        this.$v.$touch()
+      },
+      clear () {
+        this.$v.$reset()
+        this.username = ''
+        this.email = ''
+      
+      }
+}
 }
 </script>
 
